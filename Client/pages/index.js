@@ -13,15 +13,36 @@ export default function Home() {
   const [lotteryPlayers, setPlayers] = useState([])
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
+  const [lotteryHistory, setLotteryHistory] = useState([])
+  const [lotteryId, setLotteryId] = useState()
 
 
+  useEffect(() => {
+    updateState()
+  }, [lcContract])
 
-  
-
-  useEffect(() =>{
+  const updateState = () => {
     if (lcContract) getPot()
     if (lcContract) getPlayers()
-  }, [lcContract])
+    if (lcContract) getLotteryId()
+  }
+
+  const getHistory = async (id) => {
+    setLotteryHistory([])
+    for (let i = parseInt(id); i > 0; i--) {
+      const winnerAddress = await lcContract.methods.History(i).call()
+      const historyObj = {}
+      historyObj.id = i
+      historyObj.address = winnerAddress
+      setLotteryHistory(lotteryHistory => [...lotteryHistory, historyObj])
+    }
+  }
+
+  const getLotteryId = async () => {
+    const lotteryId = await lcContract.methods.Id().call()
+    setLotteryId(lotteryId)
+    await getHistory(lotteryId)
+  }
 
   const getPot = async() =>{
     const pot = await lcContract.methods.getBalance().call()
@@ -51,15 +72,24 @@ export default function Home() {
 
   }
 
-  const pickWinnerHandler = async () =>{
-    try{
-      const winner = await lcContract.methods.pickWinner().call()
-      console.log(winner)
-    }catch(err){
+
+
+  const pickWinnerHandler = async () => {
+    setError('')
+    setSuccessMsg('')
+    try {
+      await lcContract.methods.pickWinner().send({
+        from: address,
+        gas: 300000,
+        gasPrice: null
+      })
+      console.log(`lottery id :: ${lotteryId}`)
+      const winnerAddress = await lcContract.methods.History(lotteryId).call()
+      setSuccessMsg(`The winner is ${winnerAddress}`)
+      updateState()
+    } catch(err) {
       setError(err.message)
-
     }
-
   }
 
   const connrectWalletHandler = async ()=>{
@@ -139,7 +169,7 @@ export default function Home() {
               </section>
               <section>
                 <div className='container has-text-success mt-6'>
-                  <p>{error}</p>
+                  <p>{successMsg}</p>
                 </div>
               </section>
               </div>
@@ -148,22 +178,27 @@ export default function Home() {
 
             <div className={`${styles.lotteryinfo}column is-one-third`}>
               <section className='mt-5'>
-              <div className='card'>
-                <div className='card-content'>
-                  <div className='content'>
-                    <h2> Lottery History </h2>
-                    <div className='history-entry'>
-                      <div> Lottery #1 Winner: </div>
-                      <div> 
-                        <a href = "https://etherscan.io/address/0xd7214dB4af10380d9575fd7f957B24e61bC28816" target="_blank">
-                        0xd7214dB4af10380d9575fd7f957B24e61bC28816
-                        </a>
+              <div className="card">
+                    <div className="card-content">
+                      <div className="content">
+                        <h2>Lottery History</h2>
+                        {
+                          (lotteryHistory && lotteryHistory.length > 0) && lotteryHistory.map(item => {
+                            if (lotteryId != item.id) {
+                              return <div className="history-entry mt-3" key={item.id}>
+                                <div>Lottery #{item.id} winner:</div>
+                                <div>
+                                  <a href={`https://etherscan.io/address/${item.address}`} target="_blank">
+                                    {item.address}
+                                  </a>
+                                </div>
+                              </div>
+                            }
+                          })
+                        }
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              
               </section>
               <section className='mt-5'>
               <div className='card'>
