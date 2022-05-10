@@ -1,46 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-// describe("Lottry", function(){
-//   it ("Test Contract", async function (){
-//     const Lottery = await hre.ethers.getContractFactory("Lottery");
-//     const lottery = await Lottery.deploy();
-  
-//     await lottery.deployed();
-//     console.log("Lottry deployed to:", lottery.address);
-
-
-//     //enter lottery
-//     const entry = await lottery.enter( {
-//       value : ethers.utils.parseEther("0.1")
-//     })
-//     console.log("Tx hash for entry", entry.blockHash)
-
-//     let [address1, address2] = await ethers.getSigners();
-//     const entry2 = await lottery.connect(address2).enter( {
-//       value : ethers.utils.parseEther("0.001")
-//     })
-//     console.log("Tx hash for entry", entry2.blockHash);
-
-
-
-//     //check balance of lottery
-//     const balance = await lottery.getBalance()
-//     console.log("balance is : ", balance)
-
-//     //test random
-//     const getRandom = await lottery.random()
-//     console.log("Testing Random : ", getRandom)
-
-
-//     //get contestants 
-//     const conts = await lottery.getContestants()
-//     console.log (conts)
-
-  
-//   })
-
-// })
 
 describe("Lottry", function(){
   let lottery
@@ -55,7 +15,7 @@ describe("Lottry", function(){
   })
   it ("Enter Lottry", async function (){
     const entry = await lottery.enter( {
-      value : ethers.utils.parseEther("6.386")
+      value : ethers.utils.parseEther("600.386")
     })
     console.log("Tx hash for entry", entry.blockHash)
   })
@@ -93,10 +53,25 @@ describe("Lottry", function(){
     console.log (conts)
   })
 
-  it("pick a winner", async function(){
-    const winner = await lottery.pickWinner()
-    //console.log("the winner is :", winner)
-  })
+  // it("pick a winner", async function(){
+  //   const winner = await lottery.pickWinner()
+  //   console.log("the winner is :", winner)
+  // })
+
+
+
+  it("pick a winner", async function () {
+    const winner = await lottery.pickWinner();
+    console.log("the winner is :", winner);
+    let [address1, address2] = await ethers.getSigners();
+    const balance1 = await ethers.provider.getBalance(address1.address);
+    const balance2 = await ethers.provider.getBalance(address2.address);
+
+    console.log(`Balance of address1 is ${balance1}`);
+    console.log(`Balance of address2 is ${balance2}`);
+  });
+
+
 
   // it ("checks history of winner", async function(){
   //   const hist = await lottery.History(1)

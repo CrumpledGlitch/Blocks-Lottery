@@ -30,6 +30,7 @@ contract Lottery{
 
     function pickWinner() public restricted{
         uint index = random() % contestants.length;
+        //payable(contestants[index]).transfer(address(this).balance);
         contestants[index].transfer(address(this).balance);
 
          History[Id] = contestants[index];
